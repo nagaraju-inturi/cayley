@@ -63,14 +63,14 @@ func (r Registration) nodesTable() string {
 	hash ` + htyp + ` PRIMARY KEY,
 	refs INT NOT NULL,
 	value ` + btyp + `,
-	value_string TEXT,
-	datatype TEXT,
-	language TEXT,
+	value_string lvarchar,
+	datatype lvarchar,
+	language lvarchar,
 	iri BOOLEAN,
 	bnode BOOLEAN,
-	value_int BIGINT,
+	value_int INT,
 	value_bool BOOLEAN,
-	value_float double precision,
+	value_float float,
 	value_time ` + ttyp +
 		end
 }
@@ -90,7 +90,7 @@ func (r Registration) quadsTable() string {
 	predicate_hash ` + htyp + ` NOT NULL,
 	object_hash ` + htyp + ` NOT NULL,
 	label_hash ` + htyp + `,
-	ts timestamp
+	ts DATETIME YEAR TO SECOND
 );`
 }
 
@@ -98,8 +98,8 @@ func (r Registration) quadIndexes(options graph.Options) []string {
 	indexes := make([]string, 0, 10)
 	if r.ConditionalIndexes {
 		indexes = append(indexes,
-			`CREATE UNIQUE INDEX spo_unique ON quads (subject_hash, predicate_hash, object_hash) WHERE label_hash IS NULL;`,
-			`CREATE UNIQUE INDEX spol_unique ON quads (subject_hash, predicate_hash, object_hash, label_hash) WHERE label_hash IS NOT NULL;`,
+			`CREATE UNIQUE INDEX spo_unique ON quads (subject_hash, predicate_hash, object_hash);`,
+			`CREATE UNIQUE INDEX spol_unique ON quads (subject_hash, predicate_hash, object_hash, label_hash);`,
 		)
 	} else {
 		indexes = append(indexes,
@@ -109,10 +109,10 @@ func (r Registration) quadIndexes(options graph.Options) []string {
 	}
 	if !r.NoForeignKeys {
 		indexes = append(indexes,
-			`ALTER TABLE quads ADD CONSTRAINT subject_hash_fk FOREIGN KEY (subject_hash) REFERENCES nodes (hash);`,
-			`ALTER TABLE quads ADD CONSTRAINT predicate_hash_fk FOREIGN KEY (predicate_hash) REFERENCES nodes (hash);`,
-			`ALTER TABLE quads ADD CONSTRAINT object_hash_fk FOREIGN KEY (object_hash) REFERENCES nodes (hash);`,
-			`ALTER TABLE quads ADD CONSTRAINT label_hash_fk FOREIGN KEY (label_hash) REFERENCES nodes (hash);`,
+			`ALTER TABLE quads ADD CONSTRAINT FOREIGN KEY (subject_hash) REFERENCES nodes (hash);`,
+			`ALTER TABLE quads ADD CONSTRAINT FOREIGN KEY (predicate_hash) REFERENCES nodes (hash);`,
+			`ALTER TABLE quads ADD CONSTRAINT FOREIGN KEY (object_hash) REFERENCES nodes (hash);`,
+			`ALTER TABLE quads ADD CONSTRAINT FOREIGN KEY (label_hash) REFERENCES nodes (hash);`,
 		)
 	}
 	quadIndexes := [][3]quad.Direction{
@@ -136,7 +136,7 @@ func (r Registration) quadIndexes(options graph.Options) []string {
 		if r.FillFactor {
 			q += fmt.Sprintf(" WITH (FILLFACTOR = %d)", factor)
 		}
-		indexes = append(indexes, q+";")
+		//indexes = append(indexes, q+";")
 	}
 	return indexes
 }
