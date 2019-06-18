@@ -1,4 +1,4 @@
-package odbc
+package informix
 
 import (
 	"database/sql"
@@ -13,7 +13,7 @@ import (
        _ "github.com/alexbrainman/odbc"
 )
 
-const Type = "odbc"
+const Type = "informix"
 
 var QueryDialect = csql.QueryDialect{
 	RegexpOp: "REGEXP",
