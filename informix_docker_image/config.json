@@ -1,0 +1,4 @@
+{
+"store.backend":"odbc",
+"store.address":"driver=myinformix;server=informix;database=graphdb;user=informix;password=changeme;"
+}
