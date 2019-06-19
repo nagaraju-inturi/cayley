@@ -3,6 +3,7 @@ package sql
 import (
 	"database/sql"
 	"database/sql/driver"
+        "encoding/hex"
 	"fmt"
 	"strings"
 	"sync"
@@ -45,7 +46,8 @@ var _ Value = StringVal("")
 type StringVal string
 
 func (v StringVal) SQLValue() interface{} {
-	return escapeNullByte(string(v))
+//nag	return escapeNullByte(string(v))
+        return (hex.EncodeToString([]byte(v)))
 }
 
 type IntVal int64
@@ -80,7 +82,8 @@ func (h NodeHash) SQLValue() interface{} {
 	if !h.Valid() {
 		return nil
 	}
-	return []byte(h.ValueHash[:])
+// nag	return []byte(h.ValueHash[:])
+        return []byte(hex.EncodeToString(h.ValueHash[:]))
 }
 func (h *NodeHash) Scan(src interface{}) error {
 	if src == nil {
@@ -94,10 +97,15 @@ func (h *NodeHash) Scan(src interface{}) error {
 	if len(b) == 0 {
 		*h = NodeHash{}
 		return nil
-	} else if len(b) != quad.HashSize {
+// nag	} else if len(b) != quad.HashSize {
+	} else if len(b) != quad.HashSize*2 {
 		return fmt.Errorf("unexpected hash length: %d", len(b))
 	}
+// nag	copy(h.ValueHash[:], b)
+        b, err := hex.DecodeString(string(b));
+	if err == nil {
 	copy(h.ValueHash[:], b)
+        }
 	return nil
 }
 
@@ -338,19 +346,24 @@ func NodeValues(h NodeHash, v quad.Value) (ValueType, []interface{}, error) {
 	switch v := v.(type) {
 	case quad.IRI:
 		nodeKey = 1
-		values = append(values, string(v), true)
+		//nag values = append(values, string(v), true)
+		values = append(values, hex.EncodeToString([]byte(v)), true)
 	case quad.BNode:
 		nodeKey = 2
-		values = append(values, string(v), true)
+		//nag values = append(values, string(v), true)
+		values = append(values, hex.EncodeToString([]byte(v)), true)
 	case quad.String:
 		nodeKey = 3
-		values = append(values, escapeNullByte(string(v)))
+		//nag values = append(values, escapeNullByte(string(v)))
+		values = append(values, hex.EncodeToString([]byte(v)))
 	case quad.TypedString:
 		nodeKey = 4
-		values = append(values, escapeNullByte(string(v.Value)), string(v.Type))
+		//nag values = append(values, escapeNullByte(string(v.Value)), string(v.Type))
+		values = append(values, hex.EncodeToString([]byte(v.Value)), string(v.Type))
 	case quad.LangString:
 		nodeKey = 5
-		values = append(values, escapeNullByte(string(v.Value)), v.Lang)
+		//nag values = append(values, escapeNullByte(string(v.Value)), v.Lang)
+		values = append(values, hex.EncodeToString([]byte(v.Value)), v.Lang)
 	case quad.Int:
 		nodeKey = 6
 		values = append(values, int64(v))
@@ -630,22 +643,34 @@ func (qs *QuadStore) NameOf(v graph.Value) quad.Value {
 	}
 	var val quad.Value
 	if str.Valid {
+		// nag
+		//clog.Errorf("before decode string: %v", str.String)
+		str2, err2 := hex.DecodeString(str.String)
+		if (err2 != nil) {
+			clog.Errorf("Couldn't decode string: %v", str.String)
+			return nil
+		}
+		//copy(str.String[:], string(str2));
+		//clog.Errorf("decoded string: %v %v", string(str.String), string(str2))
 		if iri.Bool {
-			val = quad.IRI(str.String)
+			val = quad.IRI(string(str2))
 		} else if bnode.Bool {
-			val = quad.BNode(str.String)
+			val = quad.BNode(string(str2))
 		} else if lang.Valid {
 			val = quad.LangString{
-				Value: quad.String(unescapeNullByte(str.String)),
+				//nag Value: quad.String(unescapeNullByte(str.String)),
+				Value: quad.String(string(str2)),
 				Lang:  lang.String,
 			}
 		} else if typ.Valid {
 			val = quad.TypedString{
-				Value: quad.String(unescapeNullByte(str.String)),
+				//nag Value: quad.String(unescapeNullByte(str.String)),
+				Value: quad.String(string(str2)),
 				Type:  quad.IRI(typ.String),
 			}
 		} else {
-			val = quad.String(unescapeNullByte(str.String))
+			//nag val = quad.String(unescapeNullByte(str.String))
+			val = quad.String(string(str2))
 		}
 	} else if vint.Valid {
 		val = quad.Int(vint.Int64)

@@ -26,7 +26,7 @@ var QueryDialect = csql.QueryDialect{
 func init() {
 	csql.Register(Type, csql.Registration{
 		Driver:               "odbc",
-		HashType:             fmt.Sprintf(`CHAR(%d)`, quad.HashSize),
+		HashType:             fmt.Sprintf(`CHAR(%d)`, quad.HashSize*2),
 		BytesType:            `CHAR(2048)`,
 		HorizonType:          `BIGSERIAL`,
 		TimeType:             `DATETIME YEAR TO SECOND`,
@@ -74,8 +74,9 @@ func runTxInformix(tx *sql.Tx, nodes []graphlog.NodeUpdate, quads []graphlog.Qua
 			}
 			_, err = stmt.Exec(values...)
 			err = convInsertError(err)
-			if err != nil {
-				clog.Errorf("couldn't exec INSERT statement: %v", err)
+			// if err != nil {
+			if err != nil && (strings.Contains(strings.ToUpper(err.Error()), "UNIQUE") == false) {
+				clog.Errorf("couldn't exec INSERT statement: %v %v", err, values)
 				return err
 			}
 		} else {
