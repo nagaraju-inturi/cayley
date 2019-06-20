@@ -54,7 +54,8 @@ func Run(ctx context.Context, qu string, ses query.REPLSession) error {
 	}()
 	fmt.Printf("\n")
 	c := make(chan query.Result, 5)
-	go ses.Execute(ctx, qu, c, 100)
+	//nag go ses.Execute(ctx, qu, c, 100)
+	go ses.Execute(ctx, qu, c, 1000000)
 	for res := range c {
 		if err := res.Err(); err != nil {
 			return err

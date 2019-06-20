@@ -111,7 +111,8 @@ func (api *API) ServeV1Query(w http.ResponseWriter, r *http.Request, params http
 	par, _ := url.ParseQuery(r.URL.RawQuery)
 	limit, _ := strconv.Atoi(par.Get("limit"))
 	if limit == 0 {
-		limit = 100
+		//nag limit = 100
+		limit = 1000000
 	}
 
 	ses := l.HTTP(h.QuadStore)

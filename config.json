@@ -1,4 +1,5 @@
 {
 "store.backend":"informix",
-"store.address":"driver=myinformix;server=informix;database=graphdb;user=informix;password=changeme;"
+"store.address":"driver=myinformix;server=informix;database=graphdb;user=informix;password=changeme;",
+"query.timeout":"90s"
 }
