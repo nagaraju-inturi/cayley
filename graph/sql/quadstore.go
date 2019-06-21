@@ -231,6 +231,10 @@ func Init(typ string, addr string, options graph.Options) error {
 		return err
 	}
 	defer conn.Close()
+	_, err = conn.Exec("set lock mode to wait 60")
+	if err != nil {
+		clog.Errorf("Cannot set lock mode: %v", err)
+	}
 
 	nodesSql := fl.nodesTable()
 	quadsSql := fl.quadsTable()
@@ -299,6 +303,10 @@ func New(typ string, addr string, options graph.Options) (graph.QuadStore, error
 	conn, err := connect(addr, fl.Driver, options)
 	if err != nil {
 		return nil, err
+	}
+	_, err = conn.Exec("set lock mode to wait 60")
+	if err != nil {
+		clog.Errorf("Cannot set lock mode: %v", err)
 	}
 	qs := &QuadStore{
 		db:      conn,
