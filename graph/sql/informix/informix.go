@@ -27,7 +27,7 @@ func init() {
 	csql.Register(Type, csql.Registration{
 		Driver:               "odbc",
 		HashType:             fmt.Sprintf(`CHAR(%d)`, quad.HashSize*2),
-		BytesType:            `CHAR(2048)`,
+		BytesType:            `TEXT`,
 		HorizonType:          `BIGSERIAL`,
 		TimeType:             `DATETIME YEAR TO SECOND`,
 		QueryDialect:         QueryDialect,

@@ -63,7 +63,7 @@ func (r Registration) nodesTable() string {
 	hash ` + htyp + ` PRIMARY KEY,
 	refs INT NOT NULL,
 	value ` + btyp + `,
-	value_string lvarchar,
+	value_string text,
 	datatype lvarchar,
 	language lvarchar,
 	iri BOOLEAN,
